@@ -6,16 +6,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,7 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoginActivity : ComponentActivity(), AuthListener {
-    //val model: LoginViewModel by viewModels()
+    val model: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +44,7 @@ class LoginActivity : ComponentActivity(), AuthListener {
             PracaInzynierskaTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") { LoginCompose() }
+                    composable("login") { LoginCompose(model) }
                     composable("success") { Success() }
 
                 }
@@ -81,7 +90,9 @@ fun Success(){
 @Composable
 fun LoginCompose(model: LoginViewModel = viewModel()) {
     var email by remember { mutableStateOf("")}
-    var password by remember { mutableStateOf("")}
+    var password by rememberSaveable { mutableStateOf("")}
+    var passwordVisibility by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -97,13 +108,30 @@ fun LoginCompose(model: LoginViewModel = viewModel()) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Login") }
+            label = { Text("Email") }
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Hasło") }
+            label = { Text("Hasło") },
+            placeholder = { Text("Hasło") },
+            visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                val image = if (passwordVisibility)
+                    Icons.Filled.Visibility
+                else Icons.Filled.VisibilityOff
+
+                IconButton(onClick = {
+                    passwordVisibility = !passwordVisibility
+                }) {
+                    Icon(imageVector  = image, "")
+                }
+            }
         )
+
+
+
         Button(onClick = {
             model.getLoginWithRetrofit(email, password)
         },
