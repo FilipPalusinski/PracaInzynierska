@@ -1,10 +1,9 @@
 package com.example.pracainzynierska.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -12,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,79 +19,83 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.toUpperCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.pracainzynierska.model.LoginResponse
-import com.example.pracainzynierska.network.AuthListener
+import androidx.navigation.navArgument
+import com.example.pracainzynierska.MainActivity
+import com.example.pracainzynierska.MainScreen
+import com.example.pracainzynierska.navigation.Screen
+
+
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class LoginActivity : ComponentActivity(), AuthListener {
-    val model: LoginViewModel by viewModels()
+class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PracaInzynierskaTheme {
-                val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "login") {
-                    composable("login") { LoginCompose(model) }
-                    composable("success") { Success() }
-
-                }
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    LoginCompose()
-                }
+                    LoginApplication()
             }
         }
-
-
-
     }
-
-    override fun onStarted() {
-        Log.d("debuglog","Login started")
-
-    }
-
-    override fun onSuccess(loginResponse: LoginResponse?) {
-        Log.d("debuglog", "sucfragment ${loginResponse}")
-
-    }
-
-    override fun onFailure(message: String) {
-        Log.d("debuglog",message)
-
-    }
-
 }
 
 @Composable
-fun Success(){
-    val text = ""
-    Text(
-        text.uppercase(),
-        fontSize = 30.sp,
-        modifier = Modifier.padding(10.dp),
-        fontWeight = FontWeight.Bold,
-    )
+fun LoginApplication(model: LoginViewModel = viewModel()) {
+//    val navController = rememberNavController()
+//
+//    NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
+//        composable(route = Screen.LoginScreen.route) {
+//            LoginCompose(model, navController)
+//        }
+//        composable(
+//            route = Screen.MainScreen.route + "/{token}",
+//            arguments = listOf(
+//                navArgument("token") {
+//                    type = NavType.StringType
+//                    defaultValue = ""
+//                    nullable = true
+//                }
+//            )
+//        ) { entry ->
+//            MainScreen(token = entry.arguments?.getString("token"))
+//        }
+//    }
+
+    LoginCompose(model = model)
 }
 
+
 @Composable
-fun LoginCompose(model: LoginViewModel = viewModel()) {
+fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavController*/) {
     var email by remember { mutableStateOf("")}
     var password by rememberSaveable { mutableStateOf("")}
     var passwordVisibility by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val token by model.tokenWatcher.observeAsState("")
+    val loginState by model.loginStateResponse.observeAsState(initial = false)
+
+    if(loginState){
+        //navController.navigate(Screen.MainScreen.withArgs(token))
+        //context.startActivity(Intent(context, MainActivity::class.java))
+        val intent = Intent(context, MainActivity::class.java)
+        intent.putExtra("token", token)
+        context.startActivity(intent)
+    }
 
 
     Column(
@@ -99,12 +103,14 @@ fun LoginCompose(model: LoginViewModel = viewModel()) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text(
-            "Logowanie".uppercase(),
-            fontSize = 30.sp,
-            modifier = Modifier.padding(10.dp),
-            fontWeight = FontWeight.Bold,
-        )
+
+            Text(
+                "Logowanie".uppercase(),
+                fontSize = 30.sp,
+                modifier = Modifier.padding(10.dp),
+                fontWeight = FontWeight.Bold,
+            )
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -142,10 +148,3 @@ fun LoginCompose(model: LoginViewModel = viewModel()) {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PracaInzynierskaTheme {
-        LoginCompose()
-    }
-}

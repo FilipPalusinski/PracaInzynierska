@@ -1,11 +1,6 @@
 package com.example.pracainzynierska.di
 
-import androidx.lifecycle.ViewModel
 import com.example.pracainzynierska.network.ApiService
-import com.example.pracainzynierska.network.AuthListener
-import com.example.pracainzynierska.repository.UserRepository
-import com.example.pracainzynierska.ui.LoginActivity
-import com.example.pracainzynierska.ui.LoginViewModel
 import com.example.pracainzynierska.util.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
@@ -50,11 +45,13 @@ object AppModule {
 
 
 
-    @Singleton
-    @Provides
-    fun provideAuthListener(): AuthListener {
-        return LoginActivity()
-    }
+//    @Singleton
+//    @Provides
+//    fun provideAuthListener(): AuthListener {
+//        return LoginViewModel()
+//    }
+
+
 
 
 }

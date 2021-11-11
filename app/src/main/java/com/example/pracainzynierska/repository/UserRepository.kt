@@ -18,33 +18,9 @@ class UserRepository @Inject constructor(
 
     suspend fun userLogin(email: String, password: String) : Response<LoginResponse> {
         Log.d("debuglog","userLogin")
-        //val loginResponse = MutableLiveData<String>()
 
         return apiService.userLogin(email, password)
 
-        //apiService.userLogin(email, password)
-
-//            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-//                Log.d("debuglog","apiservice.onResponse")
-//                if(response.isSuccessful){
-//                    Log.d("debuglog","apiservice.onResponseSucess")
-//
-//                    loginResponse.value = response.body()?.string()
-//                    Log.d("debuglog","apiservice ${loginResponse.value}")
-//                }else{
-//                    Log.d("debuglog","apiservice.onResponseFail")
-//                    loginResponse.value = response.errorBody()?.string()
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-//                Log.d("debuglog","apiservice.onFailure ${t.message}")
-//
-//                loginResponse.value = t.message
-//            }
-//
-//        })
-//        return loginResponse.toString()
 
         }
 }
