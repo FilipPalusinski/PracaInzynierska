@@ -1,5 +1,6 @@
-package com.example.pracainzynierska.ui
+package com.example.pracainzynierska.ui.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,19 +26,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.pracainzynierska.MainActivity
-import com.example.pracainzynierska.MainScreen
-import com.example.pracainzynierska.navigation.Screen
+import com.example.pracainzynierska.datastore.PrefsStore
+import com.example.pracainzynierska.ui.main.MainActivity
 
 
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -47,54 +42,37 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PracaInzynierskaTheme {
-                    LoginApplication()
+                LoginCompose()
             }
         }
     }
 }
 
-@Composable
-fun LoginApplication(model: LoginViewModel = viewModel()) {
-//    val navController = rememberNavController()
-//
-//    NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
-//        composable(route = Screen.LoginScreen.route) {
-//            LoginCompose(model, navController)
-//        }
-//        composable(
-//            route = Screen.MainScreen.route + "/{token}",
-//            arguments = listOf(
-//                navArgument("token") {
-//                    type = NavType.StringType
-//                    defaultValue = ""
-//                    nullable = true
-//                }
-//            )
-//        ) { entry ->
-//            MainScreen(token = entry.arguments?.getString("token"))
-//        }
-//    }
-
-    LoginCompose(model = model)
-}
-
 
 @Composable
 fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavController*/) {
+    val context = LocalContext.current
+
+    model.getAuthWithRetrofit()
+    val authState by model.authStateResponse.observeAsState(initial = false)
+    if(authState){
+        context.startActivity(Intent(context, MainActivity::class.java))
+    }
+
     var email by remember { mutableStateOf("")}
     var password by rememberSaveable { mutableStateOf("")}
     var passwordVisibility by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+
+    val dataStore = PrefsStore(context)
 
     val token by model.tokenWatcher.observeAsState("")
     val loginState by model.loginStateResponse.observeAsState(initial = false)
 
     if(loginState){
-        //navController.navigate(Screen.MainScreen.withArgs(token))
-        //context.startActivity(Intent(context, MainActivity::class.java))
-        val intent = Intent(context, MainActivity::class.java)
-        intent.putExtra("token", token)
-        context.startActivity(intent)
+        LaunchedEffect(true) {
+            dataStore.setToken(token)
+            context.startActivity(Intent(context, MainActivity::class.java))
+        }
     }
 
 

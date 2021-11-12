@@ -1,11 +1,16 @@
 package com.example.pracainzynierska.di
 
+import android.content.Context
+import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.network.ApiService
+import com.example.pracainzynierska.network.AuthInterceptorOkHttpClient
 import com.example.pracainzynierska.util.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -22,14 +27,24 @@ object AppModule {
     fun providesHttpLoggingInterceptor() = HttpLoggingInterceptor()
         .apply {
             level = HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.HEADERS
         }
+
 
     @Singleton
     @Provides
-    fun providesOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+    fun providesAuthInterceptor(@ApplicationContext appContext: Context): Interceptor = AuthInterceptorOkHttpClient(appContext)
+
+    @Singleton
+    @Provides
+    fun providesOkHttpClient(
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+        AuthInterceptorOkHttpClient : Interceptor
+    ): OkHttpClient =
         OkHttpClient
             .Builder()
             .addInterceptor(httpLoggingInterceptor)
+            .addInterceptor(AuthInterceptorOkHttpClient)
             .build()
 
     @Singleton
@@ -42,16 +57,6 @@ object AppModule {
             .build()
             .create(ApiService::class.java)
     }
-
-
-
-//    @Singleton
-//    @Provides
-//    fun provideAuthListener(): AuthListener {
-//        return LoginViewModel()
-//    }
-
-
 
 
 }
