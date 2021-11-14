@@ -122,7 +122,19 @@ fun Navigation(navController: NavHostController) {
         }
         composable(NavDrawerItem.Logout.route) {
             val context = LocalContext.current
-            userLogout(context)
+            val dataStore = PrefsStore(context)
+            val activity = (context as? LoginActivity)
+            activity?.finish()
+            LaunchedEffect(true) {
+                dataStore.setToken("")
+                val intent = Intent(context, LoginActivity::class.java)
+                intent
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                context.startActivity(intent)
+
+            }
         }
     }
 }
@@ -133,6 +145,9 @@ fun userLogout(context: Context){
         dataStore.setToken("")
     }
     context.startActivity(Intent(context, LoginActivity::class.java))
+
+
+
 }
 
 

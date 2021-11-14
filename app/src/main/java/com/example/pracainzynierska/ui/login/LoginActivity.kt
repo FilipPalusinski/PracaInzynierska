@@ -1,10 +1,12 @@
 package com.example.pracainzynierska.ui.login
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -37,10 +39,13 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : ComponentActivity() {
+    val model: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            model.getAuthWithRetrofit()
+
             PracaInzynierskaTheme {
                 LoginCompose()
             }
@@ -49,11 +54,11 @@ class LoginActivity : ComponentActivity() {
 }
 
 
+
 @Composable
 fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavController*/) {
     val context = LocalContext.current
 
-    model.getAuthWithRetrofit()
     val authState by model.authStateResponse.observeAsState(initial = false)
     if(authState){
         context.startActivity(Intent(context, MainActivity::class.java))
@@ -69,10 +74,21 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
     val loginState by model.loginStateResponse.observeAsState(initial = false)
 
     if(loginState){
+        val activity = (context as? MainActivity)
+        activity?.finish()
         LaunchedEffect(true) {
             dataStore.setToken(token)
-            context.startActivity(Intent(context, MainActivity::class.java))
+            val intent = Intent(context, MainActivity::class.java)
+            intent
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            context.startActivity(intent)
+
         }
+
+
+
     }
 
 
