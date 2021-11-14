@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pracainzynierska.model.AuthMeResponse
 import com.example.pracainzynierska.model.LoginResponse
+import com.example.pracainzynierska.model.User
 
 
 import com.example.pracainzynierska.repository.UserRepository
@@ -23,6 +24,9 @@ class LoginViewModel @Inject constructor(
 
     val tokenWatcher: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
+    }
+    val userObjectWatcher: MutableLiveData<User> by lazy {
+        MutableLiveData<User>()
     }
     val loginStateResponse = MutableLiveData<Boolean>()
 
@@ -76,6 +80,7 @@ class LoginViewModel @Inject constructor(
 
 
             tokenWatcher.value = loginResponse.accessToken
+            userObjectWatcher.value = loginResponse.user
             loginStateResponse.value = true
 
             Log.d("debuglog", "token ")

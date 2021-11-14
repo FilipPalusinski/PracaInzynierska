@@ -40,13 +40,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.pracainzynierska.R
 import com.example.pracainzynierska.datastore.PrefsStore
+import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
+import com.example.pracainzynierska.util.Constants.EXTRA_USER
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
+lateinit var user : User
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -57,10 +60,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        user = (intent.getSerializableExtra(EXTRA_USER) as? User)!!
 
         setContent {
             PracaInzynierskaTheme {
-                AppMainScreen()
+                AppMainScreen(user)
             }
         }
     }
@@ -68,7 +72,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun AppMainScreen() {
+fun AppMainScreen(user: User?) {
 
 
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -159,7 +163,7 @@ fun HomeScreen() {
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Zalogowano",
+            text = "Zalogowano jako: ${user.name}",
             fontWeight = FontWeight.Bold,
             color = Color.Black,
             modifier = Modifier.align(Alignment.CenterHorizontally),

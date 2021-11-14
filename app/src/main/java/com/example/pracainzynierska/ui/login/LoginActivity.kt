@@ -33,6 +33,7 @@ import com.example.pracainzynierska.ui.main.MainActivity
 
 
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
+import com.example.pracainzynierska.util.Constants.EXTRA_USER
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -70,6 +71,7 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
 
     val dataStore = PrefsStore(context)
 
+    val userObject by model.userObjectWatcher.observeAsState(null)
     val token by model.tokenWatcher.observeAsState("")
     val loginState by model.loginStateResponse.observeAsState(initial = false)
 
@@ -83,6 +85,7 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .putExtra(EXTRA_USER, userObject);
             context.startActivity(intent)
 
         }
