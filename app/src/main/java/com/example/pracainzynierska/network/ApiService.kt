@@ -1,14 +1,9 @@
 package com.example.pracainzynierska.network
 
-import com.example.pracainzynierska.model.AuthMeResponse
 import com.example.pracainzynierska.model.LoginResponse
-import okhttp3.ResponseBody
-import retrofit2.Call
+import com.example.pracainzynierska.model.User
 import retrofit2.Response
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
 
@@ -21,10 +16,12 @@ interface ApiService {
 
     @GET("auth/me")
     suspend fun authMe(
-    ): Response<AuthMeResponse>
+    ): Response<User>
 
-    @POST("auth/logout")
-    suspend fun authLogout(
-    ): Response<AuthMeResponse>
-
+    @FormUrlEncoded
+    @PATCH("user/{id}")
+    suspend fun userUpdateEmail(
+        @Path("id") id: String?,
+        @Field("email") email: String?
+    ): Response<User>
 }

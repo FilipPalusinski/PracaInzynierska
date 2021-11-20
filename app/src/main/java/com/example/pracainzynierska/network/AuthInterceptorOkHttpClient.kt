@@ -30,10 +30,10 @@ class AuthInterceptorOkHttpClient @Inject constructor(
 
         }
         val url: HttpUrl = httpUrl.newBuilder()
-            .addQueryParameter("Authentication", "Bearer $tokenString")
+            //.addQueryParameter("Authorization", "$tokenString")
             .build()
         val request: Request = original.newBuilder()
-            .header("Authorization", "Bearer ${tokenString}")
+            .header("Authorization", "${tokenString}")
             .url(url)
             .build()
         return chain.proceed(request)

@@ -1,27 +1,24 @@
 package com.example.pracainzynierska.ui.main
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,10 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,29 +36,34 @@ import com.example.pracainzynierska.R
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
+import com.example.pracainzynierska.ui.login.LoginViewModel
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import com.example.pracainzynierska.util.Constants.EXTRA_USER
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import javax.inject.Inject
 
-lateinit var user : User
+// lateinit var user : User
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
 
 
+    val model: MainViewModel by viewModels()
+
+
     @DelicateCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        user = (intent.getSerializableExtra(EXTRA_USER) as? User)!!
+        Log.d("debuglog", "Get serializable: ${intent.getSerializableExtra(EXTRA_USER) as? User}")
+        model.userWatcher.value = intent.getSerializableExtra(EXTRA_USER) as? User
+
+
 
         setContent {
             PracaInzynierskaTheme {
-                AppMainScreen(user)
+                AppMainScreen(model)
             }
         }
     }
@@ -72,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun AppMainScreen(user: User?) {
+fun AppMainScreen(model: MainViewModel) {
 
 
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -94,7 +93,7 @@ fun AppMainScreen(user: User?) {
             Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController)
         },
     ) {
-        Navigation(navController = navController)
+        Navigation(navController = navController, model)
     }
 }
 @Composable
@@ -116,13 +115,13 @@ fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
 }
 
 @Composable
-fun Navigation(navController: NavHostController) {
+fun Navigation(navController: NavHostController, model: MainViewModel) {
     NavHost(navController, startDestination = NavDrawerItem.Home.route) {
         composable(NavDrawerItem.Home.route) {
-            HomeScreen()
+            HomeScreen(model)
         }
         composable(NavDrawerItem.Account.route) {
-            AccountScreen()
+            AccountScreen(model)
         }
         composable(NavDrawerItem.Logout.route) {
             val context = LocalContext.current
@@ -143,27 +142,20 @@ fun Navigation(navController: NavHostController) {
     }
 }
 
-fun userLogout(context: Context){
-    val dataStore = PrefsStore(context)
-    runBlocking {
-        dataStore.setToken("")
-    }
-    context.startActivity(Intent(context, LoginActivity::class.java))
 
-
-
-}
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(model: MainViewModel = viewModel()) {
+    val user by model.userWatcher.observeAsState(null)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Zalogowano jako: ${user.name}",
+            text = "Zalogowano jako: ${user?.name}",
             fontWeight = FontWeight.Bold,
             color = Color.Black,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -173,15 +165,14 @@ fun HomeScreen() {
     }
 }
 
-@Preview
-@Composable
-fun prevApp() {
-    AccountScreen()
-}
+
 
 @Composable
-fun AccountScreen() {
+fun AccountScreen(model: MainViewModel = viewModel()) {
     var email by remember { mutableStateOf("")}
+    var email2 by remember { mutableStateOf("")}
+    var emailOld by remember { mutableStateOf("")}
+
     var password by rememberSaveable { mutableStateOf("")}
     var password2 by rememberSaveable { mutableStateOf("")}
     var passwordOld by rememberSaveable { mutableStateOf("")}
@@ -189,6 +180,9 @@ fun AccountScreen() {
     var passwordVisibility by remember { mutableStateOf(false) }
     var passwordVisibility2 by remember { mutableStateOf(false) }
     var passwordVisibilityOld by remember { mutableStateOf(false) }
+
+
+    val user by model.userWatcher.observeAsState(null)
 
 
     Column(
@@ -203,8 +197,8 @@ fun AccountScreen() {
             fontSize = 25.sp
         )
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = emailOld,
+            onValueChange = { emailOld = it },
             label = { Text("Stary email") }
         )
         OutlinedTextField(
@@ -213,12 +207,14 @@ fun AccountScreen() {
             label = { Text("Nowy email") }
         )
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = email2,
+            onValueChange = { email2 = it },
             label = { Text("Powtórz email") }
         )
         Button(onClick = {
-            //to do onclick
+            if(email == email2){
+                user?.id?.let { model.changeEmail(it, email2) }
+            }
         },
             modifier = Modifier.padding(12.dp)) {
             Text(text = "Zapisz")

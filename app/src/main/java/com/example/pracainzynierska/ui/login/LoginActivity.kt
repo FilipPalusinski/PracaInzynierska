@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -59,39 +60,51 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavController*/) {
     val context = LocalContext.current
-
-    val authState by model.authStateResponse.observeAsState(initial = false)
-    if(authState){
-        context.startActivity(Intent(context, MainActivity::class.java))
-    }
-
-    var email by remember { mutableStateOf("")}
-    var password by rememberSaveable { mutableStateOf("")}
-    var passwordVisibility by remember { mutableStateOf(false) }
-
     val dataStore = PrefsStore(context)
 
     val userObject by model.userObjectWatcher.observeAsState(null)
     val token by model.tokenWatcher.observeAsState("")
     val loginState by model.loginStateResponse.observeAsState(initial = false)
 
-    if(loginState){
+    val authState by model.authStateResponse.observeAsState(initial = false)
+    if(authState) {
         val activity = (context as? MainActivity)
         activity?.finish()
         LaunchedEffect(true) {
             dataStore.setToken(token)
             val intent = Intent(context, MainActivity::class.java)
             intent
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                .putExtra(EXTRA_USER, userObject);
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .putExtra(EXTRA_USER, userObject);
+
+            context.startActivity(intent)
+        }
+    }
+
+    var email by remember { mutableStateOf("")}
+    var password by rememberSaveable { mutableStateOf("")}
+    var passwordVisibility by remember { mutableStateOf(false) }
+
+
+
+    if(loginState){
+
+        val activity = (context as? MainActivity)
+        activity?.finish()
+        LaunchedEffect(true) {
+            dataStore.setToken(token)
+            val intent = Intent(context, MainActivity::class.java)
+            intent
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .putExtra(EXTRA_USER, userObject);
+
             context.startActivity(intent)
 
         }
-
-
-
     }
 
 

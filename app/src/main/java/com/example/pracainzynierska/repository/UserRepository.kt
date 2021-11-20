@@ -1,8 +1,8 @@
 package com.example.pracainzynierska.repository
 
 import android.util.Log
-import com.example.pracainzynierska.model.AuthMeResponse
 import com.example.pracainzynierska.model.LoginResponse
+import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.network.ApiService
 import retrofit2.Response
 import javax.inject.Inject
@@ -19,9 +19,17 @@ class UserRepository @Inject constructor(
 
         }
 
-    suspend fun userAuth() : Response<AuthMeResponse> {
+    suspend fun userAuth() : Response<User> {
         Log.d("debuglog","userAuth")
         return apiService.authMe()
 
     }
+
+    suspend fun emailChange(id: String, email: String) : Response<User> {
+        Log.d("debuglog","emailChange")
+        return apiService.userUpdateEmail(id, email)
+
+    }
+
+
 }
