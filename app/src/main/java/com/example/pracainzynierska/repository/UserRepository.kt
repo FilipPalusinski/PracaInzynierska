@@ -32,4 +32,20 @@ class UserRepository @Inject constructor(
     }
 
 
+    suspend fun avatarChange(id: String, avatar: String) : Response<User> {
+        Log.d("debuglog","avatarChange")
+        return apiService.  userUpdateAvatar(id, avatar)
+    }
+
+    suspend fun avatarAndEmailChange(id: String, email: String, avatar: String) : Response<User> {
+        Log.d("debuglog","avatarChange")
+        return apiService.userUpdateAvatarAndEmail(id, email, avatar)
+    }
+
+    suspend fun passwordChange(id: String, password: String) : Response<User> {
+        Log.d("debuglog","passwordChange")
+        return apiService.userUpdatePassword(id, password)
+    }
+
+
 }

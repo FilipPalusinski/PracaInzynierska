@@ -2,6 +2,7 @@ package com.example.pracainzynierska.ui.login
 
 
 import android.util.Log
+import androidx.compose.material.ScaffoldState
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,7 +31,7 @@ class LoginViewModel @Inject constructor(
     val loginStateResponse = MutableLiveData<Boolean>()
 
 
-    fun getLoginWithRetrofit(email: String, password: String){
+    fun getLoginWithRetrofit(email: String, password: String, scaffoldState: ScaffoldState){
         viewModelScope.launch {
             try {
                 onStarted()
@@ -40,6 +41,10 @@ class LoginViewModel @Inject constructor(
                     onSuccess(response.body())
                 }else{
                     onFailure(response.message())
+                    viewModelScope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar(
+                            "Nie udało się zalogować")
+                    }
                 }
             }catch (e: Exception){
                 Log.d("debuglog", "exception $e")
@@ -88,6 +93,7 @@ class LoginViewModel @Inject constructor(
 
     fun onFailure(message: String) {
         Log.d("debuglog",message)
+
 
     }
 

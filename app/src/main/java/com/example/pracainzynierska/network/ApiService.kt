@@ -24,4 +24,27 @@ interface ApiService {
         @Path("id") id: String?,
         @Field("email") email: String?
     ): Response<User>
+
+    @FormUrlEncoded
+    @PATCH("user/{id}")
+    suspend fun userUpdateAvatar(
+        @Path("id") id: String?,
+        @Field("avatarUrl") avatar: String?
+    ): Response<User>
+
+    @FormUrlEncoded
+    @PATCH("user/{id}")
+    suspend fun userUpdateAvatarAndEmail(
+        @Path("id") id: String?,
+        @Field("email") email: String?,
+        @Field("avatarUrl") avatar: String?
+    ): Response<User>
+
+    @FormUrlEncoded
+    @PATCH("user/{id}")
+    suspend fun userUpdatePassword(
+        @Path("id") id: String?,
+        @Field("password") password: String?
+    ): Response<User>
+
 }

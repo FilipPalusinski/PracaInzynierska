@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -16,7 +19,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +37,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.example.pracainzynierska.R
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
@@ -47,19 +54,14 @@ import kotlinx.coroutines.*
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-
-
     val model: MainViewModel by viewModels()
 
-
+    @ExperimentalCoilApi
     @DelicateCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         Log.d("debuglog", "Get serializable: ${intent.getSerializableExtra(EXTRA_USER) as? User}")
         model.userWatcher.value = intent.getSerializableExtra(EXTRA_USER) as? User
-
-
 
         setContent {
             PracaInzynierskaTheme {
@@ -70,10 +72,9 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@ExperimentalCoilApi
 @Composable
 fun AppMainScreen(model: MainViewModel) {
-
-
     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
@@ -82,20 +83,24 @@ fun AppMainScreen(model: MainViewModel) {
     val dataStore = PrefsStore(context)
 
     val token = dataStore.getToken.collectAsState(initial = "")
-    Log.d("debuglog", "Token intent in MainActivity: ${token.value}")
+    Log.d("tokenlog", "Token intent in MainActivity: ${token.value}")
 
+    model.imageWatcher.value = model.userWatcher.value?.avatarUrl
+    val avatar by model.imageWatcher.observeAsState(null)
+    val firstLetterOfUserName: Char = (model.userWatcher.value?.name?.first() ?: "a") as Char
 
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopBar(scope = scope, scaffoldState = scaffoldState) },
         drawerBackgroundColor = Color.White,
         drawerContent = {
-            Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController)
+            Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, imageUrl =  avatar, firstLetterOfUserName)
         },
     ) {
         Navigation(navController = navController, model)
     }
 }
+
 @Composable
 fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
     TopAppBar(
@@ -114,14 +119,18 @@ fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
     )
 }
 
+@ExperimentalCoilApi
 @Composable
 fun Navigation(navController: NavHostController, model: MainViewModel) {
+    val avatar = model.userWatcher.value?.avatarUrl ?: ""
+    val email = model.userWatcher.value?.email ?: ""
+
     NavHost(navController, startDestination = NavDrawerItem.Home.route) {
         composable(NavDrawerItem.Home.route) {
             HomeScreen(model)
         }
         composable(NavDrawerItem.Account.route) {
-            AccountScreen(model)
+            AccountScreen(model, avatar, email)
         }
         composable(NavDrawerItem.Logout.route) {
             val context = LocalContext.current
@@ -166,29 +175,25 @@ fun HomeScreen(model: MainViewModel = viewModel()) {
 }
 
 
-
+@ExperimentalCoilApi
 @Composable
-fun AccountScreen(model: MainViewModel = viewModel()) {
-    var email by remember { mutableStateOf("")}
-    var email2 by remember { mutableStateOf("")}
-    var emailOld by remember { mutableStateOf("")}
+fun AccountScreen(model: MainViewModel = viewModel(), avatar: String, email: String) {
+    val user by model.userWatcher.observeAsState(null)
+    var emailWatcher by rememberSaveable { mutableStateOf(email)}
+    var avatarWatcher by rememberSaveable { mutableStateOf(avatar)}
 
     var password by rememberSaveable { mutableStateOf("")}
     var password2 by rememberSaveable { mutableStateOf("")}
-    var passwordOld by rememberSaveable { mutableStateOf("")}
 
     var passwordVisibility by remember { mutableStateOf(false) }
     var passwordVisibility2 by remember { mutableStateOf(false) }
-    var passwordVisibilityOld by remember { mutableStateOf(false) }
 
-
-    val user by model.userWatcher.observeAsState(null)
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 10.dp, top = 10.dp)
+            .padding(start = 10.dp, top = 10.dp, end = 10.dp)
     ) {
         Text(
             text = "Zaktualizuj swoje dane:",
@@ -196,25 +201,65 @@ fun AccountScreen(model: MainViewModel = viewModel()) {
             textAlign = TextAlign.Center,
             fontSize = 25.sp
         )
+
         OutlinedTextField(
-            value = emailOld,
-            onValueChange = { emailOld = it },
-            label = { Text("Stary email") }
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = emailWatcher,
+            onValueChange = { emailWatcher = it },
             label = { Text("Nowy email") }
         )
+
+
         OutlinedTextField(
-            value = email2,
-            onValueChange = { email2 = it },
-            label = { Text("Powtórz email") }
+            value = avatarWatcher,
+            onValueChange = { avatarWatcher = it },
+            label = { Text("Adres zdjęcia") }
         )
-        Button(onClick = {
-            if(email == email2){
-                user?.id?.let { model.changeEmail(it, email2) }
+
+        if(avatarWatcher == ""){
+            Box{
+                Canvas(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .size(50.dp)
+                    , onDraw = {
+                        drawCircle(color = Color.Gray)
+                    })
+                val firstLetterOfUserName: String = user?.name?.first().toString()
+                Text(
+                    text = firstLetterOfUserName.uppercase(),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                )
             }
+
+
+        }else {
+            Image(
+                painter = rememberImagePainter(avatarWatcher),
+                contentDescription = "User Profile Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .padding(15.dp)
+                    .size(50.dp)
+                    .clip(CircleShape)
+
+
+            )
+        }
+        Button(onClick = {
+
+            if(avatar != avatarWatcher && email == emailWatcher){
+                user?.id?.let {
+                    model.changeAvatar(it, avatarWatcher)
+                }
+            }else if(avatar == avatarWatcher && email != emailWatcher){
+                user?.id?.let { model.changeEmail(it, emailWatcher) }
+            }else{
+                user?.id?.let { model.changeAvatarAndEmail(it, emailWatcher, avatarWatcher)}
+            }
+
         },
             modifier = Modifier.padding(12.dp)) {
             Text(text = "Zapisz")
@@ -222,25 +267,6 @@ fun AccountScreen(model: MainViewModel = viewModel()) {
 
 
 
-        OutlinedTextField(
-            value = passwordOld,
-            onValueChange = { passwordOld = it },
-            label = { Text("Stare hasło") },
-            placeholder = { Text("Stare hasło") },
-            visualTransformation = if (passwordVisibilityOld) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            trailingIcon = {
-                val image = if (passwordVisibilityOld)
-                    Icons.Filled.Visibility
-                else Icons.Filled.VisibilityOff
-
-                IconButton(onClick = {
-                    passwordVisibilityOld = !passwordVisibilityOld
-                }) {
-                    Icon(imageVector  = image, "")
-                }
-            }
-        )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -281,11 +307,17 @@ fun AccountScreen(model: MainViewModel = viewModel()) {
         )
 
         Button(onClick = {
-            //to do onclick
+            if(password == password2){
+                user?.id?.let { model.changePassword(it, password2)}
+            }else {
+                //wyswietl komunikaty
+            }
         },
             modifier = Modifier.padding(12.dp)) {
-            Text(text = "Zapisz")
+            Text(text = "Zmień hasło")
         }
+
+
     }
 }
 

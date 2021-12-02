@@ -21,7 +21,14 @@ class MainViewModel @Inject constructor(
         MutableLiveData<User>()
     }
 
+    val imageWatcher: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+
+
     fun changeEmail(id: String, email: String){
+        Log.d("debuglog","changeEmail")
+
         viewModelScope.launch {
             try {
                 onStarted()
@@ -38,14 +45,78 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun changeAvatar(id: String, avatar: String){
+        Log.d("debuglog","changeAvatar")
+
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.avatarChange(id, avatar)
+                if(response.isSuccessful){
+                    onSuccess(response.body())
+//                    var user = userWatcher.value
+//                    if (user != null) {
+//                        user.avatarUrl = avatar
+//                    }
+//                    userWatcher.value = user
+                    imageWatcher.value = avatar
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
+
+    fun changeAvatarAndEmail(id: String, email: String, avatar: String){
+        Log.d("debuglog","changeEmailAndAvatar")
+
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.avatarAndEmailChange(id, email, avatar)
+                if(response.isSuccessful){
+                    onSuccess(response.body())
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
+
+    fun changePassword(id: String, password: String){
+        Log.d("debuglog","changePassword")
+
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.passwordChange(id, password)
+                if(response.isSuccessful){
+                    onSuccess(response.body())
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
+
+
 
     private fun onStarted() {
-        Log.d("debuglog","Email change started")
+        Log.d("debuglog","Data change started")
     }
 
     private fun onSuccess(emailChangeResponse: User?) {
         if (emailChangeResponse != null) {
-            Log.d("debuglog", "Email zmieniono na: ${emailChangeResponse.email}")
+            Log.d("debuglog", "Data changed with success")
         }
     }
 

@@ -8,9 +8,12 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -28,7 +31,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.ui.main.MainActivity
 
@@ -49,7 +54,33 @@ class LoginActivity : ComponentActivity() {
             model.getAuthWithRetrofit()
 
             PracaInzynierskaTheme {
-                LoginCompose()
+                val scaffoldState = rememberScaffoldState()
+                val scope = rememberCoroutineScope()
+                Scaffold(
+                    scaffoldState = scaffoldState,
+                    snackbarHost = {
+                        SnackbarHost(it) { data ->
+                            Snackbar(
+                                backgroundColor = Color.Red,
+                                snackbarData = data
+                            )
+                        }
+                    },
+//        floatingActionButton = {
+//            ExtendedFloatingActionButton(
+//                text = { Text("Show snackbar") },
+//                onClick = {
+//                    scope.launch {
+//                        scaffoldState.snackbarHostState.showSnackbar(
+//                            "Nie udało się zalogować")
+//                    }
+//                }
+//            )
+//        },
+                    content = {
+                        LoginCompose(model, scaffoldState)
+                    }
+                )
             }
         }
     }
@@ -57,8 +88,9 @@ class LoginActivity : ComponentActivity() {
 
 
 
+
 @Composable
-fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavController*/) {
+fun LoginCompose(model: LoginViewModel = viewModel(),scaffoldState: ScaffoldState) {
     val context = LocalContext.current
     val dataStore = PrefsStore(context)
 
@@ -71,7 +103,8 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
         val activity = (context as? MainActivity)
         activity?.finish()
         LaunchedEffect(true) {
-            dataStore.setToken(token)
+            Log.d("tokenlog", "SetToken intent in LoginActivity if authstate: $token")
+
             val intent = Intent(context, MainActivity::class.java)
             intent
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -87,23 +120,19 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
     var password by rememberSaveable { mutableStateOf("")}
     var passwordVisibility by remember { mutableStateOf(false) }
 
-
-
     if(loginState){
-
         val activity = (context as? MainActivity)
         activity?.finish()
         LaunchedEffect(true) {
             dataStore.setToken(token)
+            Log.d("tokenlog", "SetToken intent in LoginActivity if loginstate: $token")
             val intent = Intent(context, MainActivity::class.java)
             intent
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    .putExtra(EXTRA_USER, userObject);
-
+                    .putExtra(EXTRA_USER, userObject)
             context.startActivity(intent)
-
         }
     }
 
@@ -149,7 +178,7 @@ fun LoginCompose(model: LoginViewModel = viewModel()/*, navController: NavContro
 
 
         Button(onClick = {
-            model.getLoginWithRetrofit(email, password)
+            model.getLoginWithRetrofit(email, password, scaffoldState)
         },
         modifier = Modifier.padding(12.dp)) {
             Text(text = "Zaloguj")

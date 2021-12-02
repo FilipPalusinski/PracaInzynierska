@@ -4,7 +4,7 @@ import java.io.Serializable
 
 data class User(
     val archivedAt: Any,
-    val avatarUrl: Any,
+    var avatarUrl: String,
     val createdAt: String,
     val email: String,
     val id: String,

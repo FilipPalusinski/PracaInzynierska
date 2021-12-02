@@ -1,6 +1,7 @@
 package com.example.pracainzynierska.datastore
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,12 +22,15 @@ class PrefsStore @Inject constructor(
 
     suspend fun setToken(token: String) {
         userDataStore.edit { settings ->
+            Log.d("tokenlog", "settoken: $token")
+
             settings[SESSION_TOKEN] = token
         }
     }
 
     val getToken: Flow<String> = userDataStore.data
         .map { preferences ->
+            Log.d("tokenlog", "gettoken: ${preferences[SESSION_TOKEN]}")
         preferences[SESSION_TOKEN] ?: "undefined"
     }
 
