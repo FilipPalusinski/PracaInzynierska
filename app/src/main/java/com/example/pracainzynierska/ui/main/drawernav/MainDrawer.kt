@@ -1,4 +1,4 @@
-package com.example.pracainzynierska.ui.main
+package com.example.pracainzynierska.ui.main.drawernav
 
 
 import androidx.compose.foundation.Canvas
@@ -29,7 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 sealed class NavDrawerItem(val title: String, val route: String) {
-    object Home : NavDrawerItem("Ekran Główny", "home")
+    object Home : NavDrawerItem("Ekran Główny", "assigned")
     object Account : NavDrawerItem("Ustawienia", "account")
     object Logout : NavDrawerItem( "Wyloguj", "logout")
 }

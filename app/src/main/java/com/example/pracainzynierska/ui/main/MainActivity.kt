@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -44,6 +45,9 @@ import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
 import com.example.pracainzynierska.ui.login.LoginViewModel
+import com.example.pracainzynierska.ui.main.bottomnav.*
+import com.example.pracainzynierska.ui.main.drawernav.Drawer
+import com.example.pracainzynierska.ui.main.drawernav.NavDrawerItem
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import com.example.pracainzynierska.util.Constants.EXTRA_USER
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,6 +60,7 @@ class MainActivity : ComponentActivity() {
 
     val model: MainViewModel by viewModels()
 
+    @ExperimentalMaterialApi
     @ExperimentalCoilApi
     @DelicateCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +77,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@ExperimentalMaterialApi
 @ExperimentalCoilApi
 @Composable
 fun AppMainScreen(model: MainViewModel) {
@@ -89,10 +95,45 @@ fun AppMainScreen(model: MainViewModel) {
     val avatar by model.imageWatcher.observeAsState(null)
     val firstLetterOfUserName: Char = (model.userWatcher.value?.name?.first() ?: "a") as Char
 
+    val items = listOf(
+        NavDrawerItem.Account,
+        NavDrawerItem.Logout
+    )
+
+    val hideBottomBar = navController
+        .currentBackStackEntryAsState().value?.destination?.route in items.map { it.route }
+
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopBar(scope = scope, scaffoldState = scaffoldState) },
         drawerBackgroundColor = Color.White,
+        bottomBar = {
+            if(!hideBottomBar) {
+                BottomNavigationBar(
+                    items = listOf(
+                        BottomNavItem(
+                            name = "Assigned",
+                            route = "assigned",
+                            icon = Icons.Filled.Description
+                        ),
+                        BottomNavItem(
+                            name = "Unassigned",
+                            route = "unassigned",
+                            icon = Icons.Filled.FindInPage
+                        ),
+                        BottomNavItem(
+                            name = "Completed",
+                            route = "completed",
+                            icon = Icons.Filled.Task
+                        ),
+                    ),
+                    navController = navController,
+                    onItemClick = {
+                        navController.navigate(it.route)
+                    }
+                )
+            }
+        },
         drawerContent = {
             Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, imageUrl =  avatar, firstLetterOfUserName)
         },
@@ -125,9 +166,9 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
     val avatar = model.userWatcher.value?.avatarUrl ?: ""
     val email = model.userWatcher.value?.email ?: ""
 
-    NavHost(navController, startDestination = NavDrawerItem.Home.route) {
+    NavHost(navController, startDestination = "assigned") {
         composable(NavDrawerItem.Home.route) {
-            HomeScreen(model)
+            AssignedSale(model)
         }
         composable(NavDrawerItem.Account.route) {
             AccountScreen(model, avatar, email)
@@ -148,29 +189,15 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
 
             }
         }
-    }
-}
-
-
-
-
-@Composable
-fun HomeScreen(model: MainViewModel = viewModel()) {
-    val user by model.userWatcher.observeAsState(null)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-    ) {
-        Text(
-            text = "Zalogowano jako: ${user?.name}",
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            textAlign = TextAlign.Center,
-            fontSize = 25.sp
-        )
+        composable("assigned") {
+            AssignedSale(model)
+        }
+        composable("unassigned") {
+            UnassignedSale()
+        }
+        composable("completed") {
+            CompletedSale()
+        }
     }
 }
 
