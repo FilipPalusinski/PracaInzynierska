@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d("debuglog", "Get serializable: ${intent.getSerializableExtra(EXTRA_USER) as? User}")
         model.userWatcher.value = intent.getSerializableExtra(EXTRA_USER) as? User
+        model.getUnassignedSales()
 
         setContent {
             PracaInzynierskaTheme {
@@ -119,7 +120,8 @@ fun AppMainScreen(model: MainViewModel) {
                         BottomNavItem(
                             name = "Unassigned",
                             route = "unassigned",
-                            icon = Icons.Filled.FindInPage
+                            icon = Icons.Filled.FindInPage,
+                            badgeCount = 25
                         ),
                         BottomNavItem(
                             name = "Completed",
@@ -137,8 +139,10 @@ fun AppMainScreen(model: MainViewModel) {
         drawerContent = {
             Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, imageUrl =  avatar, firstLetterOfUserName)
         },
-    ) {
-        Navigation(navController = navController, model)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            Navigation(navController = navController, model)
+        }
     }
 }
 
@@ -193,7 +197,7 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
             AssignedSale(model)
         }
         composable("unassigned") {
-            UnassignedSale()
+            model.SaleWatcher.value?.let { it1 -> UnassignedSale(model, it1) }
         }
         composable("completed") {
             CompletedSale()

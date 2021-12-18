@@ -17,28 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pracainzynierska.ui.main.MainViewModel
 
 
-@Composable
-    fun Navigation2(navController: NavHostController) {
-        NavHost(navController = navController, startDestination = "assigned") {
-            composable("assigned") {
-                AssignedSale()
-            }
-            composable("unassigned") {
-                UnassignedSale()
-            }
-            composable("completed") {
-                CompletedSale()
-            }
-        }
-    }
 
     @ExperimentalMaterialApi
     @Composable
@@ -61,7 +44,7 @@ import com.example.pracainzynierska.ui.main.MainViewModel
                     selected = selected,
                     onClick = { onItemClick(item) },
                     selectedContentColor = Color.White,
-                    unselectedContentColor = Color.DarkGray,
+                    unselectedContentColor = Color.Gray,
                     icon = {
                         Column(
                             horizontalAlignment = CenterHorizontally
@@ -100,9 +83,6 @@ import com.example.pracainzynierska.ui.main.MainViewModel
     @Composable
     fun AssignedSale(model: MainViewModel = viewModel()) {
         val user by model.userWatcher.observeAsState(null)
-        val navController = rememberNavController()
-
-
 
 
         Box(
@@ -118,15 +98,7 @@ import com.example.pracainzynierska.ui.main.MainViewModel
         }
     }
 
-    @Composable
-    fun UnassignedSale() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "unassigned screen")
-        }
-    }
+
 
     @Composable
     fun CompletedSale() {

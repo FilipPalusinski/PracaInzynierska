@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pracainzynierska.model.SaleUnassigned
+import com.example.pracainzynierska.model.SaleUnassignedItem
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,10 @@ class MainViewModel @Inject constructor(
 
     val userWatcher: MutableLiveData<User> by lazy {
         MutableLiveData<User>()
+    }
+
+    val SaleWatcher: MutableLiveData<SaleUnassigned> by lazy {
+        MutableLiveData<SaleUnassigned>()
     }
 
     val imageWatcher: MutableLiveData<String> by lazy {
@@ -55,11 +61,6 @@ class MainViewModel @Inject constructor(
                 val response = userRepository.avatarChange(id, avatar)
                 if(response.isSuccessful){
                     onSuccess(response.body())
-//                    var user = userWatcher.value
-//                    if (user != null) {
-//                        user.avatarUrl = avatar
-//                    }
-//                    userWatcher.value = user
                     imageWatcher.value = avatar
                 }else{
                     onFailure(response.message())
@@ -108,7 +109,23 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getUnassignedSales(){
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.unassignedSales()
+                if(response.isSuccessful){
+                    onSuccessGetSales(response.body())
 
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
 
     private fun onStarted() {
         Log.d("debuglog","Data change started")
@@ -117,6 +134,13 @@ class MainViewModel @Inject constructor(
     private fun onSuccess(emailChangeResponse: User?) {
         if (emailChangeResponse != null) {
             Log.d("debuglog", "Data changed with success")
+        }
+    }
+
+    private fun onSuccessGetSales(UnassignedSalesResponse: SaleUnassigned?) {
+        if (UnassignedSalesResponse != null) {
+            Log.d("debuglog", "success ${UnassignedSalesResponse}")
+            SaleWatcher.value = UnassignedSalesResponse
         }
     }
 
