@@ -11,6 +11,8 @@ import com.example.pracainzynierska.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import javax.inject.Inject
 
 
@@ -23,14 +25,66 @@ class MainViewModel @Inject constructor(
         MutableLiveData<User>()
     }
 
-    val SaleWatcher: MutableLiveData<SaleUnassigned> by lazy {
-        MutableLiveData<SaleUnassigned>()
+    val saleWatcher: MutableLiveData<HashMap<String, MutableList<SaleUnassignedItem>>> by lazy {
+        MutableLiveData<HashMap<String, MutableList<SaleUnassignedItem>>>()
     }
 
     val imageWatcher: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
     }
 
+    val responseWatcher: MutableLiveData<SaleUnassigned> by lazy {
+        MutableLiveData<SaleUnassigned>()
+    }
+
+    fun getDetailedSale(saleId: String): SaleUnassignedItem?{
+        var sales = responseWatcher.value
+        if (sales != null) {
+            for (sale in sales) {
+                if(sale.id==saleId)
+                return sale
+            }
+        }
+        return null
+    }
+
+    fun sortAndGroupSalesByDate(sales: SaleUnassigned): HashMap<String, MutableList<SaleUnassignedItem>>{
+        val sortedList = HashMap<String, MutableList<SaleUnassignedItem>>()
+        var temp: MutableList<SaleUnassignedItem>?
+        for (sale in sales) {
+            temp = sortedList[sale.contract.plannedSignAt.split(" ")[0]]
+            if (temp != null)
+                temp.add(sale)
+            else {
+                temp = ArrayList()
+                temp.add(sale)
+            }
+            sortedList[sale.contract.plannedSignAt.split(" ")[0]] = temp
+        }
+
+        val sortedMap:HashMap<String, MutableList<SaleUnassignedItem>> = LinkedHashMap()
+        sortedList.keys.sorted().forEach{sortedMap[it] = sortedList[it]!!}
+
+        return sortedMap
+    }
+
+    fun getDayFromDate(dateFromDateTime: String): String{
+        val format1 = SimpleDateFormat("dd-MM-yyyy")
+        val dt1= format1.parse(dateFromDateTime)
+        val format2: DateFormat = SimpleDateFormat("EEEE")
+        val finalDay: String = format2.format(dt1)
+        var dayInPolish = ""
+        when(finalDay) {
+            "Monday" -> dayInPolish = "Poniedziałek"
+            "Tuesday" -> dayInPolish = "Wtorek"
+            "Wednesday" -> dayInPolish = "Środa"
+            "Thursday" -> dayInPolish = "Czwartek"
+            "Friday" -> dayInPolish = "Piątek"
+            "Saturday" -> dayInPolish = "Sobota"
+            "Sunday" -> dayInPolish = "Niedziela"
+        }
+        return dayInPolish
+    }
 
     fun changeEmail(id: String, email: String){
         Log.d("debuglog","changeEmail")
@@ -140,7 +194,9 @@ class MainViewModel @Inject constructor(
     private fun onSuccessGetSales(UnassignedSalesResponse: SaleUnassigned?) {
         if (UnassignedSalesResponse != null) {
             Log.d("debuglog", "success ${UnassignedSalesResponse}")
-            SaleWatcher.value = UnassignedSalesResponse
+            responseWatcher.value = UnassignedSalesResponse
+            saleWatcher.value = sortAndGroupSalesByDate(UnassignedSalesResponse)
+
         }
     }
 

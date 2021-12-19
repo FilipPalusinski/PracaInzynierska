@@ -29,22 +29,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.pracainzynierska.R
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
-import com.example.pracainzynierska.ui.login.LoginViewModel
 import com.example.pracainzynierska.ui.main.bottomnav.*
 import com.example.pracainzynierska.ui.main.drawernav.Drawer
 import com.example.pracainzynierska.ui.main.drawernav.NavDrawerItem
@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d("debuglog", "Get serializable: ${intent.getSerializableExtra(EXTRA_USER) as? User}")
         model.userWatcher.value = intent.getSerializableExtra(EXTRA_USER) as? User
-        model.getUnassignedSales()
+
 
         setContent {
             PracaInzynierskaTheme {
@@ -197,11 +197,28 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
             AssignedSale(model)
         }
         composable("unassigned") {
-            model.SaleWatcher.value?.let { it1 -> UnassignedSale(model, it1) }
+            model.getUnassignedSales()
+            UnassignedSale(model,navController)
+
         }
         composable("completed") {
             CompletedSale()
         }
+        composable("detail/{saleId}",
+        arguments = listOf(
+            navArgument("saleId") {
+                type = NavType.StringType
+            }
+        )) {
+            val saleName = remember {
+                it.arguments?.getString("saleId")
+            }
+            saleName?.let { it1 -> DetailSaleScreen(it1, model) }
+        }
+
+
+
+
     }
 }
 
