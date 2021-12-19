@@ -172,7 +172,8 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
 
     NavHost(navController, startDestination = "assigned") {
         composable(NavDrawerItem.Home.route) {
-            AssignedSale(model)
+            model.getAssignedSales()
+            AssignedSale(model, navController)
         }
         composable(NavDrawerItem.Account.route) {
             AccountScreen(model, avatar, email)
@@ -194,7 +195,8 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
             }
         }
         composable("assigned") {
-            AssignedSale(model)
+            model.getAssignedSales()
+            AssignedSale(model,navController)
         }
         composable("unassigned") {
             model.getUnassignedSales()
@@ -204,16 +206,25 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
         composable("completed") {
             CompletedSale()
         }
-        composable("detail/{saleId}",
+        composable("detail/{saleId}/{saleType}",
         arguments = listOf(
             navArgument("saleId") {
+                type = NavType.StringType
+            },
+            navArgument("saleType") {
                 type = NavType.StringType
             }
         )) {
             val saleName = remember {
                 it.arguments?.getString("saleId")
             }
-            saleName?.let { it1 -> DetailSaleScreen(it1, model) }
+            val saleType = remember {
+                it.arguments?.getString("saleType")
+            }
+            //saleName?.let { it1 -> DetailSaleScreen(it1, model) }
+            if (saleName != null && saleType != null) {
+                DetailSaleScreen(saleId = saleName, saleType = saleType, model)
+            }
         }
 
 

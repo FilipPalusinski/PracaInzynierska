@@ -1,7 +1,7 @@
 package com.example.pracainzynierska.network
 
 import com.example.pracainzynierska.model.LoginResponse
-import com.example.pracainzynierska.model.SaleUnassigned
+import com.example.pracainzynierska.model.Sale
 import com.example.pracainzynierska.model.User
 import retrofit2.Response
 import retrofit2.http.*
@@ -49,6 +49,8 @@ interface ApiService {
     ): Response<User>
 
     @GET("sale/unassigned")
-    suspend fun getUnAssignedSales(): Response<SaleUnassigned>
+    suspend fun getUnAssignedSales(): Response<Sale>
 
+    @GET("sale")
+    suspend fun getAssignedSales(): Response<Sale>
 }

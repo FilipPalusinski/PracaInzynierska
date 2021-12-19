@@ -1,6 +1,5 @@
 package com.example.pracainzynierska.ui.main
 
-import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -16,14 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.pracainzynierska.model.SaleUnassignedItem
+import com.example.pracainzynierska.model.SaleItem
 import kotlin.collections.HashMap
 
 @Composable
 fun UnassignedSale(model: MainViewModel = viewModel(), navController: NavController) {
     val scrollState = rememberScrollState()
 
-    val sortedList: HashMap<String, MutableList<SaleUnassignedItem>>? = model.saleWatcher.value
+    val sortedList: HashMap<String, MutableList<SaleItem>>? = model.unassignedSaleWatcher.value
 
     Column(
         modifier = Modifier
@@ -81,7 +80,7 @@ private fun Date(data: String, day: String) {
 }
 
 @Composable
-private fun Sale(sale: SaleUnassignedItem, navController: NavController) {
+private fun Sale(sale: SaleItem, navController: NavController) {
     val expanded = remember { mutableStateOf(false) }
 
 
@@ -90,7 +89,7 @@ private fun Sale(sale: SaleUnassignedItem, navController: NavController) {
             modifier = Modifier
                 .clickable(onClick = {
                     navController.navigate(
-                        "detail/${sale.id}")
+                        "detail/${sale.id}/unassigned")
                 })
                 .padding(17.dp)
                 .height(expandedHeight)

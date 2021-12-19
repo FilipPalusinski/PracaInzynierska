@@ -1,11 +1,8 @@
 package com.example.pracainzynierska.ui.main
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,13 +10,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.pracainzynierska.model.SaleUnassignedItem
 
 @Composable
-fun DetailSaleScreen(saleId: String, model: MainViewModel = viewModel()) {
+fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = viewModel()) {
     val scrollState = rememberScrollState()
 
-    val sale = model.getDetailedSale(saleId)!!
+    val sale = model.getDetailedSale(saleId,saleType)!!
 
     Column(
         modifier = Modifier

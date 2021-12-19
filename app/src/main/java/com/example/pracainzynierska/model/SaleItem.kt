@@ -1,6 +1,6 @@
 package com.example.pracainzynierska.model
 
-data class SaleUnassignedItem(
+data class SaleItem(
     val contract: Contract,
     val customer: Customer,
     val id: String,

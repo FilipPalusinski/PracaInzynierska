@@ -80,23 +80,6 @@ import com.example.pracainzynierska.ui.main.MainViewModel
         }
     }
 
-    @Composable
-    fun AssignedSale(model: MainViewModel = viewModel()) {
-        val user by model.userWatcher.observeAsState(null)
-
-
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Text(
-                text = "Zalogowano jako: ${user?.name}",
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
-                fontSize = 25.sp
-            )
-        }
-    }
 
 
 

@@ -2,7 +2,7 @@ package com.example.pracainzynierska.repository
 
 import android.util.Log
 import com.example.pracainzynierska.model.LoginResponse
-import com.example.pracainzynierska.model.SaleUnassigned
+import com.example.pracainzynierska.model.Sale
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.network.ApiService
 import retrofit2.Response
@@ -48,9 +48,14 @@ class UserRepository @Inject constructor(
         return apiService.userUpdatePassword(id, password)
     }
 
-    suspend fun unassignedSales() : Response<SaleUnassigned> {
-        Log.d("debuglog","userAuth")
+    suspend fun unassignedSales() : Response<Sale> {
+        Log.d("debuglog","unassignedSales")
         return apiService.getUnAssignedSales()
+    }
+
+    suspend fun assignedSales() : Response<Sale> {
+        Log.d("debuglog","assignedSales")
+        return apiService.getAssignedSales()
 
     }
 
