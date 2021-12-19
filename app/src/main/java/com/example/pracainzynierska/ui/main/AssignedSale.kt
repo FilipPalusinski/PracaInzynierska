@@ -9,6 +9,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,9 +27,8 @@ import com.example.pracainzynierska.model.SaleItem
 @Composable
 fun AssignedSale(model: MainViewModel = viewModel(), navController: NavController) {
     val scrollState = rememberScrollState()
-
-    val sortedList: HashMap<String, MutableList<SaleItem>>? = model.assignedSaleWatcher.value
-
+    val sales by model.assignedSaleWatcher.observeAsState()
+    val sortedList: HashMap<String, MutableList<SaleItem>>? = sales
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,12 +89,13 @@ private fun Sale(sale: SaleItem, navController: NavController) {
     val expanded = remember { mutableStateOf(false) }
 
 
-    var expandedHeight = if (expanded.value) 150.dp else 35.dp
+    var expandedHeight = if (expanded.value) 160.dp else 35.dp
     Column(
         modifier = Modifier
             .clickable(onClick = {
                 navController.navigate(
-                    "detail/${sale.id}/assigned")
+                    "detail/${sale.id}/assigned"
+                )
             })
             .padding(17.dp)
             .height(expandedHeight)
@@ -141,11 +143,13 @@ private fun Sale(sale: SaleItem, navController: NavController) {
             Text(
                 text = "Brak uwag"
             )
+        }else{
+            Text(
+                text = sale.others
+            )
         }
 
-        Text(
-            text = sale.others
-        )
+
 
     }
 

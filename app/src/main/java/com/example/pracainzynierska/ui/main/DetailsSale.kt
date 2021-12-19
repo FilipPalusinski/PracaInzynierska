@@ -19,7 +19,7 @@ fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = vi
 
     Column(
         modifier = Modifier
-            .padding(17.dp)
+            .padding(start = 17.dp)
             .verticalScroll(state = scrollState)
 
     )
