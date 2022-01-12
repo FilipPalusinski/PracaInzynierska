@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -194,17 +197,28 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
         )
         Log.d("statusDebug", "${sale.status.type}")
         if(saleType=="assigned"){
+            val openDialog = remember { mutableStateOf(false)  }
+            var isSigned = remember { mutableStateOf(false)}
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    isSigned.value = false
+                    openDialog.value = true
+                },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(5.dp)
             ) {
                 Text(text = "Klient nie podpisał umowy")
             }
+
+
+
+
+
             Button(
                 onClick = {
-
+                    isSigned.value = true
+                    openDialog.value = true
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -213,18 +227,99 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
             ) {
                 Text(text = "Klient podpisał umowę")
             }
+
+
+            if (openDialog.value) {
+
+                AlertDialog(
+                    onDismissRequest = {},
+                    title = {
+                        Text(text = "Upewnij się!")
+                    },
+                    text = {
+                        if(isSigned.value){
+                            Text("Czy na pewno chcesz zatwierdzić podpisanie umowy przez klienta?")
+                        } else {
+                            Text("Czy na pewno chcesz zatwierdzić niepodpisanie umowy przez klienta?")
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if(isSigned.value){
+                                    model.setSaleStatus(sale.id, "SIGN_ACCEPTED")
+                                }else{
+                                    model.setSaleStatus(sale.id, "SIGN_REJECTED")
+                                }
+                                navController.navigate("completed")
+                                openDialog.value = false
+                                isSigned.value = false
+                            }) {
+                            Text("Zatwierdź")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                openDialog.value = false
+                            }) {
+                            Text("Anuluj")
+                        }
+                    }
+                )
+            }
+
+
+
+
         }else if(saleType=="unassigned"){
+            val openDialog2 = remember { mutableStateOf(false)  }
+
             Button(
                 onClick = {
-                    model.setSaleAsAssigned(sale.id)
-                    navController.navigate("assigned")
-                          },
+                    openDialog2.value = true
+
+                },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(5.dp)
             ) {
                 Text(text = "Przypisz umowę dla siebie")
             }
+
+            if (openDialog2.value) {
+
+                AlertDialog(
+                    onDismissRequest = {},
+                    title = {
+                        Text(text = "Upewnij się!")
+                    },
+                    text = {
+                            Text("Czy na pewno chcesz przypisać umowę dla siebie?")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                model.setSaleAsAssigned(sale.id)
+                                navController.navigate("assigned")
+                                openDialog2.value = false
+                            }) {
+                            Text("Zatwierdź")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                openDialog2.value = false
+                            }) {
+                            Text("Anuluj")
+                        }
+                    }
+                )
+            }
+
+
+
         }
 
     }

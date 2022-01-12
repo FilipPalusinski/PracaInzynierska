@@ -70,7 +70,12 @@ interface ApiService {
         @Field("saleId") saleId: String
     ): Response<SaleItem>
 
-
+    @FormUrlEncoded
+    @POST("sale/change-status")
+    suspend fun setSaleStatus(
+        @Field("saleId") saleId: String,
+        @Field("status") status: String
+    ): Response<SaleItem>
 
 
 }

@@ -67,9 +67,13 @@ class UserRepository @Inject constructor(
     }
 
     suspend fun assignSale(saleId: String) : Response<SaleItem> {
-        Log.d("debuglog","userLogin")
+        Log.d("debuglog","assignSale")
         return apiService.setSaleAsAssigned(saleId)
     }
 
+    suspend fun changeSaleStatus(saleId: String, status: String) : Response<SaleItem> {
+        Log.d("debuglog","changeSaleStatus")
+        return apiService.setSaleStatus(saleId, status)
+    }
 
 }

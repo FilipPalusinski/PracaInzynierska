@@ -77,7 +77,7 @@ class MainViewModel @Inject constructor(
                 Log.d("debuglog","viewModelScope.launch")
                 val response = userRepository.assignSale(saleId)
                 if(response.isSuccessful){
-                    onSuccessAssign(response.body())
+                    onSuccessChangeStatus(response.body())
                 }else{
                     onFailure(response.message())
                 }
@@ -86,6 +86,26 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    fun setSaleStatus(saleId: String, status: String){
+        Log.d("debuglog","setSaleAsAssigned")
+
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.changeSaleStatus(saleId, status)
+                if(response.isSuccessful){
+                    onSuccessChangeStatus(response.body())
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
+
 
     fun sortAndGroupSalesByDate(sales: Sale): HashMap<String, MutableList<SaleItem>>{
         val sortedList = HashMap<String, MutableList<SaleItem>>()
@@ -210,7 +230,6 @@ class MainViewModel @Inject constructor(
                 val response = userRepository.unassignedSales()
                 if(response.isSuccessful){
                     onSuccessGetUnassignedSales(response.body())
-
                 }else{
                     onFailure(response.message())
                 }
@@ -228,7 +247,6 @@ class MainViewModel @Inject constructor(
                 val response = userRepository.confirmedSales()
                 if(response.isSuccessful){
                     onSuccessGetConfirmedSales(response.body())
-
                 }else{
                     onFailure(response.message())
                 }
@@ -266,9 +284,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun onSuccessAssign(assignResponse: SaleItem?) {
+    private fun onSuccessChangeStatus(assignResponse: SaleItem?) {
         if (assignResponse != null) {
-            Log.d("debuglog", "assign with success")
+            Log.d("debuglog", "assign or statuschange with success")
         }
     }
 
