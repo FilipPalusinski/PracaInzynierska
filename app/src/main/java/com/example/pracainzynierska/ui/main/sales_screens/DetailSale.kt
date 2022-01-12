@@ -1,25 +1,45 @@
-package com.example.pracainzynierska.ui.main
+package com.example.pracainzynierska.ui.main.sales_screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.pracainzynierska.ui.main.MainViewModel
+import com.example.pracainzynierska.util.Constants.SALE_ASSIGNED_STATUS
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 @Composable
-fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = viewModel()) {
+fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewModel(), navController: NavController) {
     val scrollState = rememberScrollState()
 
     val sale = model.getDetailedSale(saleId,saleType)!!
 
+
+    val timestamp = sale.contract.createdAt
+    Log.d("detailDebug", "$timestamp")
+    val format1 = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    val dt1= format1.parse(timestamp)
+    val format2: DateFormat = SimpleDateFormat("yyyy-MM-dd")
+    val dateFormat: String = format2.format(dt1)
+
+    val format3: DateFormat = SimpleDateFormat("HH:mm")
+    val timeFormat: String = format3.format(dt1)
+
+
     Column(
         modifier = Modifier
-            .padding(start = 17.dp)
+            .padding(start = 17.dp, end = 17.dp)
             .verticalScroll(state = scrollState)
 
     )
@@ -39,7 +59,7 @@ fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = vi
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = sale.contract.createdAt
+            text = "$dateFormat, o godz. $timeFormat"
         )
         Text(
             modifier = Modifier
@@ -72,9 +92,8 @@ fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = vi
             text = "${sale.contract.price} zł"
         )
 
-
-
         Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             modifier = Modifier
                 .padding(top = 5.dp),
@@ -173,6 +192,40 @@ fun DetailSaleScreen(saleId: String, saleType: String, model: MainViewModel = vi
         Text(
             text = sale.customer.taxNumber
         )
+        Log.d("statusDebug", "${sale.status.type}")
+        if(saleType=="assigned"){
+            Button(
+                onClick = { /*TODO*/ },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(5.dp)
+            ) {
+                Text(text = "Klient nie podpisał umowy")
+            }
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(10.dp)
+
+            ) {
+                Text(text = "Klient podpisał umowę")
+            }
+        }else if(saleType=="unassigned"){
+            Button(
+                onClick = {
+                    model.setSaleAsAssigned(sale.id)
+                    navController.navigate("assigned")
+                          },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(5.dp)
+            ) {
+                Text(text = "Przypisz umowę dla siebie")
+            }
+        }
 
     }
 }

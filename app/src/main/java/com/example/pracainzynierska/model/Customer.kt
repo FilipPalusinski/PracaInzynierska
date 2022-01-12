@@ -6,6 +6,7 @@ data class Customer(
     val companyName: String,
     val createdAt: String,
     val email: String,
+    val phone: String,
     val id: String,
     val lawyerId: Any,
     val name: String,

@@ -1,4 +1,4 @@
-package com.example.pracainzynierska.ui.main
+package com.example.pracainzynierska.ui.main.sales_screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -18,10 +18,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pracainzynierska.model.SaleItem
+import com.example.pracainzynierska.ui.main.MainViewModel
 import kotlin.collections.HashMap
 
 @Composable
-fun UnassignedSale(model: MainViewModel = viewModel(), navController: NavController) {
+fun UnassignedSales(model: MainViewModel = viewModel(), navController: NavController) {
     val scrollState = rememberScrollState()
     val sales by model.unassignedSaleWatcher.observeAsState()
     val sortedList: HashMap<String, MutableList<SaleItem>>? = sales
@@ -38,17 +39,16 @@ fun UnassignedSale(model: MainViewModel = viewModel(), navController: NavControl
 
                 Date(dateFromDateTime, day)
 
-                var counter = 1
-                sortedList[key]?.forEach {
-                    if(counter%2==0){
+
+                sortedList[key]?.forEachIndexed { index, saleItem ->
+                    if(index>0){
                         Divider(
                             modifier = Modifier.padding(start = 20.dp, end = 20.dp),
                             color = Color.Gray,
                             thickness = 1.dp
                         )
                     }
-                    Sale(it,navController)
-                    counter+=1
+                    Sale(saleItem,navController)
                 }
             }
         }

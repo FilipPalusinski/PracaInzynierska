@@ -31,6 +31,9 @@ class MainViewModel @Inject constructor(
     val assignedSaleWatcher: MutableLiveData<HashMap<String, MutableList<SaleItem>>> by lazy {
         MutableLiveData<HashMap<String, MutableList<SaleItem>>>()
     }
+    val confirmedSaleWatcher: MutableLiveData<HashMap<String, MutableList<SaleItem>>> by lazy {
+        MutableLiveData<HashMap<String, MutableList<SaleItem>>>()
+    }
 
     val imageWatcher: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
@@ -42,6 +45,17 @@ class MainViewModel @Inject constructor(
     val responseUnassignedSaleWatcher: MutableLiveData<Sale> by lazy {
         MutableLiveData<Sale>()
     }
+    val responseConfirmedSaleWatcher: MutableLiveData<Sale> by lazy {
+        MutableLiveData<Sale>()
+    }
+
+    fun returnSaleFromSalesResponse(sales: Sale, saleId: String): SaleItem?{
+        for (sale in sales) {
+                if(sale.id==saleId)
+                return sale
+            }
+        return null
+    }
 
     fun getDetailedSale(saleId: String, saleType: String): SaleItem?{
         lateinit var sales: Sale
@@ -49,15 +63,28 @@ class MainViewModel @Inject constructor(
         when(saleType){
             "assigned" -> sales = responseAssignedSaleWatcher.value!!
             "unassigned" -> sales = responseUnassignedSaleWatcher.value!!
+            "confirmed" -> sales = responseConfirmedSaleWatcher.value!!
         }
+        return returnSaleFromSalesResponse(sales, saleId)
+    }
 
-        if (sales != null) {
-            for (sale in sales) {
-                if(sale.id==saleId)
-                return sale
+    fun setSaleAsAssigned(saleId: String){
+        Log.d("debuglog","setSaleAsAssigned")
+
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.assignSale(saleId)
+                if(response.isSuccessful){
+                    onSuccessAssign(response.body())
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
             }
         }
-        return null
     }
 
     fun sortAndGroupSalesByDate(sales: Sale): HashMap<String, MutableList<SaleItem>>{
@@ -193,6 +220,24 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getConfirmedSales(){
+        viewModelScope.launch {
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.confirmedSales()
+                if(response.isSuccessful){
+                    onSuccessGetConfirmedSales(response.body())
+
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+        }
+    }
+
     fun getAssignedSales(){
         viewModelScope.launch {
             try {
@@ -221,11 +266,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun onSuccessAssign(assignResponse: SaleItem?) {
+        if (assignResponse != null) {
+            Log.d("debuglog", "assign with success")
+        }
+    }
+
     private fun onSuccessGetUnassignedSales(salesResponse: Sale?) {
         if (salesResponse != null) {
             Log.d("debuglog", "success ${salesResponse}")
             responseUnassignedSaleWatcher.value = salesResponse
             unassignedSaleWatcher.value = sortAndGroupSalesByDate(salesResponse)
+
+        }
+    }
+
+    private fun onSuccessGetConfirmedSales(salesResponse: Sale?) {
+        if (salesResponse != null) {
+            Log.d("debuglog", "success ${salesResponse}")
+            responseConfirmedSaleWatcher.value = salesResponse
+            confirmedSaleWatcher.value = sortAndGroupSalesByDate(salesResponse)
 
         }
     }

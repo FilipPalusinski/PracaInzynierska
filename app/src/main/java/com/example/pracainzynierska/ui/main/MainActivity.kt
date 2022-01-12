@@ -9,8 +9,10 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -23,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -41,13 +43,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import com.example.pracainzynierska.R
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
+import com.example.pracainzynierska.ui.main.sales_screens.AssignedSales
+import com.example.pracainzynierska.ui.main.sales_screens.DetailSale
+import com.example.pracainzynierska.ui.main.sales_screens.UnassignedSales
 import com.example.pracainzynierska.ui.main.bottomnav.*
 import com.example.pracainzynierska.ui.main.drawernav.Drawer
 import com.example.pracainzynierska.ui.main.drawernav.NavDrawerItem
+import com.example.pracainzynierska.ui.main.sales_screens.ConfirmedSales
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import com.example.pracainzynierska.util.Constants.EXTRA_USER
 import dagger.hilt.android.AndroidEntryPoint
@@ -106,25 +111,25 @@ fun AppMainScreen(model: MainViewModel) {
 
     Scaffold(
         scaffoldState = scaffoldState,
-        topBar = { TopBar(scope = scope, scaffoldState = scaffoldState) },
+        topBar = { TopBar(scope = scope, scaffoldState = scaffoldState, model.userWatcher.value?.name) },
         drawerBackgroundColor = Color.White,
         bottomBar = {
             if(!hideBottomBar) {
                 BottomNavigationBar(
                     items = listOf(
                         BottomNavItem(
-                            name = "Assigned",
+                            name = "Przypisane",
                             route = "assigned",
                             icon = Icons.Filled.Description
                         ),
                         BottomNavItem(
-                            name = "Unassigned",
+                            name = "Nieprzypisane",
                             route = "unassigned",
                             icon = Icons.Filled.FindInPage,
                             badgeCount = 25
                         ),
                         BottomNavItem(
-                            name = "Completed",
+                            name = "Ukończone",
                             route = "completed",
                             icon = Icons.Filled.Task
                         ),
@@ -147,9 +152,9 @@ fun AppMainScreen(model: MainViewModel) {
 }
 
 @Composable
-fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState) {
+fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState, text: String?) {
     TopAppBar(
-        title = { Text(text = stringResource(R.string.app_name), fontSize = 18.sp) },
+        title = { text?.let { Text(text = it, fontSize = 18.sp) } },
         navigationIcon = {
             IconButton(onClick = {
                 scope.launch {
@@ -173,7 +178,7 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
     NavHost(navController, startDestination = "assigned") {
         composable(NavDrawerItem.Home.route) {
             model.getAssignedSales()
-            AssignedSale(model, navController)
+            AssignedSales(model, navController)
         }
         composable(NavDrawerItem.Account.route) {
             AccountScreen(model, avatar, email)
@@ -196,15 +201,16 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
         }
         composable("assigned") {
             model.getAssignedSales()
-            AssignedSale(model,navController)
+            AssignedSales(model,navController)
         }
         composable("unassigned") {
             model.getUnassignedSales()
-            UnassignedSale(model,navController)
+            UnassignedSales(model,navController)
 
         }
         composable("completed") {
-            CompletedSale()
+            model.getConfirmedSales()
+            ConfirmedSales(model,navController)
         }
         composable("detail/{saleId}/{saleType}",
         arguments = listOf(
@@ -215,15 +221,14 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
                 type = NavType.StringType
             }
         )) {
-            val saleName = remember {
+            val saleId = remember {
                 it.arguments?.getString("saleId")
             }
             val saleType = remember {
                 it.arguments?.getString("saleType")
             }
-            //saleName?.let { it1 -> DetailSaleScreen(it1, model) }
-            if (saleName != null && saleType != null) {
-                DetailSaleScreen(saleId = saleName, saleType = saleType, model)
+            if (saleId != null && saleType != null) {
+                DetailSale(saleId = saleId, saleType = saleType, model, navController)
             }
         }
 
@@ -247,12 +252,15 @@ fun AccountScreen(model: MainViewModel = viewModel(), avatar: String, email: Str
     var passwordVisibility by remember { mutableStateOf(false) }
     var passwordVisibility2 by remember { mutableStateOf(false) }
 
+    val scrollState = rememberScrollState()
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 10.dp, top = 10.dp, end = 10.dp)
+            .verticalScroll(state = scrollState)
+
     ) {
         Text(
             text = "Zaktualizuj swoje dane:",

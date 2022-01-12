@@ -1,4 +1,4 @@
-package com.example.pracainzynierska.ui.main
+package com.example.pracainzynierska.ui.main.sales_screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,9 +23,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pracainzynierska.model.SaleItem
+import com.example.pracainzynierska.ui.main.MainViewModel
 
 @Composable
-fun AssignedSale(model: MainViewModel = viewModel(), navController: NavController) {
+fun AssignedSales(model: MainViewModel = viewModel(), navController: NavController) {
     val scrollState = rememberScrollState()
     val sales by model.assignedSaleWatcher.observeAsState()
     val sortedList: HashMap<String, MutableList<SaleItem>>? = sales
