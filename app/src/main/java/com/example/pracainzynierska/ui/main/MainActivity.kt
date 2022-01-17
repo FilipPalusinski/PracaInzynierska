@@ -46,15 +46,13 @@ import coil.compose.rememberImagePainter
 import com.example.pracainzynierska.datastore.PrefsStore
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.ui.login.LoginActivity
-import com.example.pracainzynierska.ui.main.sales_screens.AssignedSales
-import com.example.pracainzynierska.ui.main.sales_screens.DetailSale
-import com.example.pracainzynierska.ui.main.sales_screens.UnassignedSales
 import com.example.pracainzynierska.ui.main.bottomnav.*
 import com.example.pracainzynierska.ui.main.drawernav.Drawer
 import com.example.pracainzynierska.ui.main.drawernav.NavDrawerItem
-import com.example.pracainzynierska.ui.main.sales_screens.ConfirmedSales
+import com.example.pracainzynierska.ui.main.sales_screens.*
 import com.example.pracainzynierska.ui.ui.theme.PracaInzynierskaTheme
 import com.example.pracainzynierska.util.Constants.EXTRA_USER
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
@@ -65,6 +63,7 @@ class MainActivity : ComponentActivity() {
 
     val model: MainViewModel by viewModels()
 
+    @ExperimentalPermissionsApi
     @ExperimentalMaterialApi
     @ExperimentalCoilApi
     @DelicateCoroutinesApi
@@ -83,6 +82,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@ExperimentalPermissionsApi
 @ExperimentalMaterialApi
 @ExperimentalCoilApi
 @Composable
@@ -169,6 +169,7 @@ fun TopBar(scope: CoroutineScope, scaffoldState: ScaffoldState, text: String?) {
     )
 }
 
+@ExperimentalPermissionsApi
 @ExperimentalCoilApi
 @Composable
 fun Navigation(navController: NavHostController, model: MainViewModel) {
@@ -202,6 +203,9 @@ fun Navigation(navController: NavHostController, model: MainViewModel) {
         composable("assigned") {
             model.getAssignedSales()
             AssignedSales(model,navController)
+        }
+        composable("camera") {
+            mainCamera()
         }
         composable("unassigned") {
             model.getUnassignedSales()
