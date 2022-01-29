@@ -49,30 +49,17 @@ import com.example.pracainzynierska.ui.main.MainViewModel
                         Column(
                             horizontalAlignment = CenterHorizontally
                         ) {
-                            if (item.badgeCount > 0) {
-                                BadgeBox(
-                                    badgeContent = {
-                                        Text(text = item.badgeCount.toString())
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.name
-                                    )
-                                }
-                            } else {
                                 Icon(
                                     imageVector = item.icon,
                                     contentDescription = item.name
                                 )
-                            }
-                            if(selected) {
+
                                 Text(
                                     text = item.name,
                                     textAlign = TextAlign.Center,
                                     fontSize = 10.sp
                                 )
-                            }
+
                         }
                     }
                 )

@@ -99,7 +99,7 @@ fun AppMainScreen(model: MainViewModel) {
 
     model.imageWatcher.value = model.userWatcher.value?.avatarUrl
     val avatar by model.imageWatcher.observeAsState(null)
-    val firstLetterOfUserName: Char = (model.userWatcher.value?.name?.first() ?: "a") as Char
+//    val firstLetterOfUserName: Char = (model.userWatcher.value?.name?.first() ?: "?") as Char
 
     val items = listOf(
         NavDrawerItem.Account,
@@ -125,9 +125,7 @@ fun AppMainScreen(model: MainViewModel) {
                         BottomNavItem(
                             name = "Nieprzypisane",
                             route = "unassigned",
-                            icon = Icons.Filled.FindInPage,
-                            badgeCount = 25
-                        ),
+                            icon = Icons.Filled.FindInPage),
                         BottomNavItem(
                             name = "Ukończone",
                             route = "completed",
@@ -142,7 +140,7 @@ fun AppMainScreen(model: MainViewModel) {
             }
         },
         drawerContent = {
-            Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, imageUrl =  avatar, firstLetterOfUserName)
+            Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, imageUrl =  avatar, model.userWatcher.value?.name)
         },
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {

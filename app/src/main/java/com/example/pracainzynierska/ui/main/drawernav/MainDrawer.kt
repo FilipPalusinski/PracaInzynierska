@@ -36,12 +36,13 @@ sealed class NavDrawerItem(val title: String, val route: String) {
 
 @ExperimentalCoilApi
 @Composable
-fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: NavController, imageUrl: String?, firstLetter: Char) {
+fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: NavController, imageUrl: String?, username: String?) {
     val items = listOf(
         NavDrawerItem.Home,
         NavDrawerItem.Account,
         NavDrawerItem.Logout
     )
+    val firstLetter: Char = (username?.first() ?: "?") as Char
     Column(
         modifier = Modifier
             .background(Color.White)
@@ -51,39 +52,52 @@ fun Drawer(scope: CoroutineScope, scaffoldState: ScaffoldState, navController: N
                 .fillMaxWidth()
                 .height(10.dp)
         )
-        if(imageUrl == null){
+        Row(verticalAlignment = Alignment.CenterVertically){
+            if(imageUrl == null){
+
                 Box{
                     Canvas(
                         modifier = Modifier
                             .padding(15.dp)
                             .size(50.dp)
                         , onDraw = {
-                        drawCircle(color = Color.Gray)
-                    })
+                            drawCircle(color = Color.Gray)
+                        })
                     Text(
                         text = firstLetter.toString().uppercase(),
 
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
-                                modifier = Modifier
+                        modifier = Modifier
                             .align(Alignment.Center)
                     )
                 }
 
 
-        }else {
-            Image(
-                painter = rememberImagePainter(imageUrl),
-                contentDescription = "User Profile Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .padding(15.dp)
-                    .size(50.dp)
-                    .clip(CircleShape)
+            }else {
+                Image(
+                    painter = rememberImagePainter(imageUrl),
+                    contentDescription = "User Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .size(50.dp)
+                        .clip(CircleShape)
 
 
-            )
+                )
+            }
+            username?.let {
+                Text(
+                    text = it,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+            }
         }
+
+
+
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         items.forEach { item ->
@@ -131,13 +145,3 @@ fun DrawerItem(item: NavDrawerItem, selected: Boolean, onItemClick: (NavDrawerIt
 }
 
 
-@ExperimentalCoilApi
-@Preview(showBackground = true)
-@Composable
-fun DrawerPreview() {
-    val scope = rememberCoroutineScope()
-    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-    val navController = rememberNavController()
-    val letter: Char = "a" as Char
-    Drawer(scope = scope, scaffoldState = scaffoldState, navController = navController, null, letter)
-}
