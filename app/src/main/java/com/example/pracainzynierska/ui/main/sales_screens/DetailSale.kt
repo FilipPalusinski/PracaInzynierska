@@ -7,12 +7,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,19 +29,22 @@ import java.text.SimpleDateFormat
 
 @Composable
 fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewModel(), navController: NavController) {
-    Scaffold(
+    val context = LocalContext.current
+    val sale = model.getDetailedSale(saleId, saleType)!!
+   Scaffold(
         backgroundColor = MaterialTheme.colors.surface,
         floatingActionButton = {
             if (saleType == "assigned") {
             FloatingActionButton(
                 backgroundColor = MaterialTheme.colors.primary,
                 content = {
-                    Icon(Icons.Filled.Add, "")
+                    Icon(Icons.Filled.Download, "download")
                 },
                 contentColor = Companion.White,
                 onClick = {
-                    navController.navigate("camera")
 
+                    // navController.navigate("camera")
+                    model.getPdfFile(name = sale.customer.name,saleId = saleId, context)
                 }
             )
         }
@@ -47,7 +52,7 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
     ) {
         val scrollState = rememberScrollState()
 
-        val sale = model.getDetailedSale(saleId, saleType)!!
+        //val sale = model.getDetailedSale(saleId, saleType)!!
 
 
         val timestamp = sale.contract.createdAt
@@ -142,11 +147,19 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
-
             Text(
                 text = sale.contract.signAddress
             )
-
+            Text(
+                modifier = Modifier
+                    .padding(top = 5.dp),
+                text = "Numer telefonu",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = sale.customer.phone
+            )
             Text(
                 modifier = Modifier
                     .padding(top = 5.dp),
@@ -227,7 +240,7 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(5.dp)
+                        .padding(start = 20.dp, top = 20.dp, bottom = 5.dp)
                 ) {
                     Text(text = "Klient nie podpisał umowy")
                 }
@@ -239,7 +252,7 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(10.dp)
+                        .padding(start = 20.dp, top = 20.dp, bottom = 20.dp)
 
                 ) {
                     Text(text = "Klient podpisał umowę")
@@ -297,7 +310,7 @@ fun DetailSale(saleId: String, saleType: String, model: MainViewModel = viewMode
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(5.dp)
+                        .padding(start = 20.dp, top = 20.dp, bottom = 20.dp)
                 ) {
                     Text(text = "Przypisz umowę dla siebie")
                 }

@@ -6,6 +6,7 @@ import com.example.pracainzynierska.model.Sale
 import com.example.pracainzynierska.model.SaleItem
 import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.network.ApiService
+import okhttp3.ResponseBody
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -74,6 +75,10 @@ class UserRepository @Inject constructor(
     suspend fun changeSaleStatus(saleId: String, status: String) : Response<SaleItem> {
         Log.d("debuglog","changeSaleStatus")
         return apiService.setSaleStatus(saleId, status)
+    }
+
+    suspend fun downloadFilePdf(saleId: String) : Response<ResponseBody> {
+        return apiService.downloadFile(saleId)
     }
 
 }

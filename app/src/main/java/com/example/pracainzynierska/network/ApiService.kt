@@ -4,6 +4,7 @@ import com.example.pracainzynierska.model.LoginResponse
 import com.example.pracainzynierska.model.Sale
 import com.example.pracainzynierska.model.SaleItem
 import com.example.pracainzynierska.model.User
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -77,5 +78,11 @@ interface ApiService {
         @Field("status") status: String
     ): Response<SaleItem>
 
+
+    @GET("sale/contract-pdf/{userId}")
+    @Streaming
+    suspend fun downloadFile(
+        @Path("userId") userId: String?
+    ): Response<ResponseBody>
 
 }

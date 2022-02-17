@@ -1,6 +1,9 @@
 package com.example.pracainzynierska.ui.main
 
+import android.content.Context
+import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +13,8 @@ import com.example.pracainzynierska.model.User
 import com.example.pracainzynierska.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.lang.Exception
+import java.io.File
+import java.io.InputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import javax.inject.Inject
@@ -68,6 +72,71 @@ class MainViewModel @Inject constructor(
         return returnSaleFromSalesResponse(sales, saleId)
     }
 
+    fun getPdfFile(name: String,saleId: String, context: Context){
+        //val pathWhereYouWantToSaveFile = path
+        //val path = context.getExternalFilesDir("UMOWY")
+       // val path = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)?.absolutePath
+        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        //Log.e("saveFile","file" + file.toString())
+
+        Log.e("saveFile",path.toString())
+
+
+       val pathWhereYouWantToSaveFile = File(path, "umowa $name.pdf")
+     //   val pathWhereYouWantToSaveFile = path"/UMOWY/umowa$saleId.pdf"
+
+        Log.e("saveFile",pathWhereYouWantToSaveFile.toString())
+
+        viewModelScope.launch {
+          //  val responseBody=userRepository.downloadFilePdf(saleId).body()
+            //Log.e("saveFile",responseBody.toString())
+
+            try {
+                onStarted()
+                Log.d("debuglog","viewModelScope.launch")
+                val response = userRepository.downloadFilePdf(saleId)
+                if(response.isSuccessful){
+                    Log.e("saveFile","success")
+                    Log.e("saveFile", response.body()?.byteStream().toString())
+                    Log.d("saveFile","$pathWhereYouWantToSaveFile")
+
+                    response.body()?.byteStream()?.saveToFile(pathWhereYouWantToSaveFile.toString())
+                    Toast.makeText(context, "Pobrano plik PDF do folderu \"Pobrane\"!", Toast.LENGTH_LONG).show()
+
+
+
+
+                }else{
+                    onFailure(response.message())
+                }
+            }catch (e: Exception){
+                Log.d("debuglog", "exception $e")
+            }
+
+
+
+         //   saveFile(responseBody,pathWhereYouWantToSaveFile)
+           // response = userRepository.downloadFilePdf(saleId)
+        }
+
+    }
+
+    private fun InputStream.saveToFile(file: String) = use { input ->
+        File(file).outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+
+
+//
+//    private fun writeToFile(inputStream: InputStream, pathWhereYouWantToSaveFile) {
+//        val fileReader = ByteArray(4096)
+//        var fileSizeDownloaded = 0
+//        val fos: OutputStream = FileOutputStream(pdfFileName)
+//    }
+
+
     fun setSaleAsAssigned(saleId: String){
         Log.d("debuglog","setSaleAsAssigned")
 
@@ -86,6 +155,34 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+//    fun saveFile(body: ResponseBody?, pathWhereYouWantToSaveFile: String):String?{
+//        if (body==null)
+//            return ""
+//        var input: InputStream? = null
+//        try {
+//            input = body.byteStream()
+//            //val file = File(getCacheDir(), "cacheFileAppeal.srl")
+//            val fos = FileOutputStream(pathWhereYouWantToSaveFile)
+//            fos.use { output ->
+//                val buffer = ByteArray(4 * 1024) // or other buffer size
+//                var read: Int
+//                while (input.read(buffer).also { read = it } != -1) {
+//                    output.write(buffer, 0, read)
+//                }
+//                output.flush()
+//            }
+//            return pathWhereYouWantToSaveFile
+//        }catch (e:Exception){
+//            Log.e("saveFile",e.toString())
+//        }
+//        finally {
+//            input?.close()
+//        }
+//        return ""
+//    }
+
+
+
 
     fun setSaleStatus(saleId: String, status: String){
         Log.d("debuglog","setSaleAsAssigned")
@@ -325,6 +422,14 @@ class MainViewModel @Inject constructor(
         Log.d("debuglog",message)
 
     }
+
+
+
+
+
+
+
+
 
 
 }
